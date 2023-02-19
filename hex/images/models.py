@@ -4,7 +4,7 @@ from django.utils import timezone
 
 
 def content_file_name(instance, filename):
-    return '/'.join([instance.creator.email, filename])
+    return '/'.join([instance.creator.username, filename])
 
 
 class ImagesUser(User):

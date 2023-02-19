@@ -2,11 +2,14 @@ from django.contrib.auth.models import Group, Permission
 from images.models import ImagesUser, Image
 from images.custom_renderers import JPEGRenderer, PNGRenderer
 from rest_framework.viewsets import ModelViewSet
-# from rest_framework.views import APIView
-from rest_framework import viewsets, mixins
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from django.http.response import FileResponse, HttpResponse
+from wsgiref.util import FileWrapper
 from images.serializers import *
+import io
+from PIL import Image as img
 
 
 class UserViewSet(ModelViewSet):
@@ -41,6 +44,20 @@ class ImageViewSet(ModelViewSet):
             queryset = Image.objects.filter(creator=self.request.user)
 
         return queryset
+
+    @action(detail=False, methods=['GET'], name='Get picture', renderer_classes=(JPEGRenderer, PNGRenderer))
+    def pics(self, request):
+        queryset = Image.objects.get(creator=request.user, id=self.request.query_params.get('imageid'))
+        size = self.request.query_params.get('size')
+
+        new_img = img.open(queryset.image_fullres)
+        new_img.thumbnail(size=(int(new_img.height / (new_img.height / int(size))),
+                                int(new_img.width / (new_img.width / int(size)))))
+
+        x = io.BytesIO()
+        new_img.save(x, new_img.format)
+
+        return Response(x.getvalue())
 
 
 class PermissionViewSet(ModelViewSet):

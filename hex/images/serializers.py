@@ -53,7 +53,7 @@ class PermissionSerializer(serializers.HyperlinkedModelSerializer):
     def create(self, validated_data):
         perm = Permission(name=validated_data.get('name'),
                           codename=validated_data.get('codename'),
-                          content_type_id='1')
+                          content_type_id='7')
 
         perm.save()
 
@@ -62,10 +62,17 @@ class PermissionSerializer(serializers.HyperlinkedModelSerializer):
 
 class ImageSerializer(serializers.HyperlinkedModelSerializer):
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    pic_urls = serializers.SerializerMethodField(method_name='create_custom_url')
+
+    def create_custom_url(self, attrs):
+        perms = (a.split('.')[1] for a in self.context['request'].user.get_all_permissions() if 'images' in a)
+
+        return {perm: f"http://{self.context['request'].get_host()}/images/pics?imageid={attrs.pk}&size={perm}"
+                for perm in perms if perm.isdigit() or perm == 'full'}
 
     class Meta:
         model = Image
-        fields = ['url', 'image_fullres', 'creator', 'author']
+        fields = ['pic_urls', 'image_fullres', 'author']
 
     def validate(self, attrs):
         if (attrs.get('image_fullres')).content_type not in ('image/png', 'image/jpeg', 'image/jpg') or \
@@ -88,14 +95,3 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
         x.save()
 
         return x
-
-
-class UploadedImageSerializer(serializers.HyperlinkedModelSerializer):
-    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    def validate(self, attrs):
-        ...
-
-    class Meta:
-        model = Image
-        fields = ['image_fullres', 'author']
