@@ -15,7 +15,7 @@
 - [x] Default tier "Enterprise"
   - [ ] Thumbnail 200px
   - [ ] Thumbnail 400px
-  - [ ] Fully-sized image
+  - [x] Fully-sized image
   - [ ] Expiring links (from 300 to 30000 seconds)
 - [x] Admins able to create arbitrary tiers
   - [x] Arbitrary thumbnail size

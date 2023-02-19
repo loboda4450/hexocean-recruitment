@@ -72,7 +72,7 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
                 (attrs.get('image_fullres')).image.format not in ('PNG', 'JPEG'):
             raise serializers.ValidationError(f'Wrong image format {attrs.get("image_fullres").image.format} '
                                               f'(should be JPG/PNG)')
-        # double check just in case content type injection
+        # double check just in case of content type injection
 
         return attrs
 
@@ -88,3 +88,14 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
         x.save()
 
         return x
+
+
+class UploadedImageSerializer(serializers.HyperlinkedModelSerializer):
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def validate(self, attrs):
+        ...
+
+    class Meta:
+        model = Image
+        fields = ['image_fullres', 'author']
