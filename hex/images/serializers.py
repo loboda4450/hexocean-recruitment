@@ -67,8 +67,10 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
     def create_custom_url(self, attrs):
         perms = (a.split('.')[1] for a in self.context['request'].user.get_all_permissions() if 'images' in a)
 
-        return {perm: f"http://{self.context['request'].get_host()}/images/pics?imageid={attrs.pk}&size={perm}"
-                for perm in perms if perm.isdigit() or perm == 'full'}
+        return {
+            perm: f"http://{self.context['request'].get_host()}/images/pics?imagename={attrs.image_name}&size={perm}"
+            for perm in perms if perm.isdigit() or perm == 'full'}
+        # changed from imageid to prevent iterating over catalog
 
     class Meta:
         model = Image
