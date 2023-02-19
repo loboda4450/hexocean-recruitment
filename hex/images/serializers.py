@@ -1,0 +1,65 @@
+from django.contrib.auth.models import Group, Permission
+from images.models import ImagesUser, Image
+from rest_framework import serializers
+
+
+class ImagesUserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ImagesUser
+        fields = ['url', 'username', 'password', 'email', 'groups']
+
+    def validate(self, attrs):
+        if ImagesUser.objects.filter(email=attrs.get("email")):
+            raise serializers.ValidationError(f'There is an account connected with {attrs.get("email")} email address!')
+
+        return attrs
+
+    def create(self, validated_data):
+        user = ImagesUser(username=validated_data.get('username'),
+                          email=validated_data.get('email'))  # avoid raising DoesNotExist exception
+
+        user.set_password(validated_data.get('password'))
+        user.save()  # shitty solution to put user into the database so i can access it below but didnt found out better solution for now
+        user.groups.add(validated_data.get('groups')[0].id)
+        user.save()
+
+        return user
+
+
+class GroupSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['url', 'name', 'permissions']
+
+    # def validate(self, attrs):
+    #     if Group.objects.all().filter(name=attrs.get('name'))
+
+
+class PermissionSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ['url', 'codename', 'name']
+
+    def validate(self, attrs):
+        if not attrs.get('codename').isdigit():
+            raise serializers.ValidationError('Codename has to be integer type (e.g. 100, 300)')
+
+        if Permission.objects.all().filter(codename=attrs.get("codename")):
+            raise serializers.ValidationError(f'There is permission with {attrs.get("codename")} codename!')
+
+        return attrs
+
+    def create(self, validated_data):
+        perm = Permission(name=validated_data.get('name'),
+                          codename=validated_data.get('codename'),
+                          content_type_id='1')
+
+        perm.save()
+
+        return perm
+
+
+class ImageSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Image
+        fields = ['url', 'image_fullres']
