@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 from django.utils import timezone
-from django.conf import settings
 
 
 class ImagesUser(User):
@@ -18,4 +16,6 @@ class ImagesUser(User):
 class Image(models.Model):
     date_posted = models.DateTimeField('Date posted', default=timezone.now)
     image_fullres = models.ImageField('Image', default=None, upload_to='pics/')
-    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    image_name = models.CharField(max_length=50, default=None)
+    binary = models.BinaryField(default=b'XD')
+    creator = models.ForeignKey(ImagesUser, on_delete=models.CASCADE)

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from images.models import ImagesUser, Image
 from rest_framework import serializers
+from uuid import uuid4
 
 
 class ImagesUserSerializer(serializers.HyperlinkedModelSerializer):
@@ -19,7 +20,7 @@ class ImagesUserSerializer(serializers.HyperlinkedModelSerializer):
                           email=validated_data.get('email'))  # avoid raising DoesNotExist exception
 
         user.set_password(validated_data.get('password'))
-        user.save()  # shitty solution to put user into the database so i can access it below but didnt found out better solution for now
+        user.save()  # as I found in docs it's the best solution lol
         user.groups.add(validated_data.get('groups')[0].id)
         user.save()
 
@@ -60,6 +61,30 @@ class PermissionSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ImageSerializer(serializers.HyperlinkedModelSerializer):
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Image
-        fields = ['url', 'image_fullres']
+        fields = ['url', 'image_fullres', 'creator', 'author']
+
+    def validate(self, attrs):
+        if (attrs.get('image_fullres')).content_type not in ('image/png', 'image/jpeg', 'image/jpg') or \
+                (attrs.get('image_fullres')).image.format not in ('PNG', 'JPEG'):
+            raise serializers.ValidationError(f'Wrong image format {attrs.get("image_fullres").image.format} '
+                                              f'(should be JPG/PNG)')
+        # double check just in case content type injection
+
+        return attrs
+
+    def create(self, validated_data):
+        img = validated_data.get('image_fullres')
+        img.name = f'{uuid4()}.{img.image.format}'
+        x = Image.objects.create(image_fullres=img,
+                                 image_name=validated_data.get('image_fullres').name,
+                                 binary=img.file.read(),
+                                 creator=validated_data.get('author')
+                                 )
+
+        x.save()
+
+        return x

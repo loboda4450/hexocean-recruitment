@@ -2,9 +2,11 @@
 
 ### Requirements completed:
 - [ ] docker-compose
-- [ ] Upload images via HTTP request
-- [ ] Users able to list their images
-- [ ]
+- [x] Upload images via HTTP request
+  - [x] Validate image type
+  - [x] Save with custom id
+  - [x] Generate binary from image
+- [x] Users able to list their images
 - [x] Default tier "Basic"
   - [ ] Thumbnail 200px
 - [x] Default tier "Premium"

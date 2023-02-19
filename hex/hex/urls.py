@@ -5,8 +5,10 @@ from images import views
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
-router.register(r'images', views.ImageViewSet, basename='Image')
+router.register(r'images', views.ImageViewSet, basename='image')
 router.register(r'permissions', views.PermissionViewSet)
+
+# print(router.urls)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
