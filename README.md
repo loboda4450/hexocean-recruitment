@@ -8,13 +8,13 @@
   - [x] Generate binary from image
 - [x] Users able to list their images
 - [x] Default tier "Basic"
-  - [ ] Thumbnail 200px
+  - [x] Thumbnail 200px
 - [x] Default tier "Premium"
-  - [ ] Thumbnail 200px
-  - [ ] Thumbnail 400px
+  - [x] Thumbnail 200px
+  - [x] Thumbnail 400px
 - [x] Default tier "Enterprise"
-  - [ ] Thumbnail 200px
-  - [ ] Thumbnail 400px
+  - [x] Thumbnail 200px
+  - [x] Thumbnail 400px
   - [x] Fully-sized image
   - [ ] Expiring links (from 300 to 30000 seconds)
 - [x] Admins able to create arbitrary tiers
