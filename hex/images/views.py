@@ -4,9 +4,10 @@ from images.custom_renderers import JPEGRenderer, PNGRenderer
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
+from images.permissions import HasImagePermission, ReadOnly
 from rest_framework import status
 from images.serializers import *
 import io
@@ -38,7 +39,8 @@ class ImageViewSet(ModelViewSet):
     API endpoint that allows images to be viewed or edited.
     """
     serializer_class = ImageSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasImagePermission or IsAdminUser]
+    http_method_names = ['get', 'post', 'delete']
 
     def get_queryset(self):
         if self.request.user.is_staff or self.request.user.is_superuser:
@@ -53,9 +55,10 @@ class ImageViewSet(ModelViewSet):
     @action(detail=False,
             methods=['GET'],
             name='Get picture',
-            renderer_classes=(JPEGRenderer, PNGRenderer),
-            permission_classes=(IsAuthenticatedOrReadOnly,))
+            renderer_classes=(JPEGRenderer, PNGRenderer, JSONRenderer),
+            permission_classes=[HasImagePermission | ReadOnly])
     def pics(self, attrs):
+        """API parametrized endpoint to get images"""
         if 'temp' in self.request.query_params and 'timeout' in self.request.query_params:
             try:
                 signed_data = self.request.query_params.get('temp')
@@ -113,8 +116,9 @@ class ImageViewSet(ModelViewSet):
     @action(detail=False,
             methods=['GET'],
             name='Get temporary link',
-            permission_classes=(IsAuthenticated,))
+            permission_classes=(IsAuthenticated, ))
     def generate_temp_url(self, attrs):
+        """API parametrized endpoint to get temporary link"""
         if not self.request.query_params.get('timeout').isdigit():
             return Response(data={'detail': f'Invalid timeout format'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -135,7 +139,7 @@ class PermissionViewSet(ModelViewSet):
     """
     API endpoint that allows permissions to be viewed and created.
     """
-    queryset = Permission.objects.filter(
-        content_type_id='7')  # Shrink the permissions queryset just to image content type
+    # Shrink the permissions queryset just to image content type
+    queryset = Permission.objects.filter(content_type_id='7')
     serializer_class = PermissionSerializer
     permission_classes = [IsAdminUser]
