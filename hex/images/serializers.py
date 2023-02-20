@@ -64,13 +64,18 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     pic_urls = serializers.SerializerMethodField(method_name='create_custom_url')
 
-    def create_custom_url(self, attrs):
-        perms = (a.split('.')[1] for a in self.context['request'].user.get_all_permissions() if 'images' in a)
+    # changed from imageid to prevent iterating over catalog
+    # i know its hardly readable, but its pythonic shrug
 
-        return {
-            perm: f"http://{self.context['request'].get_host()}/images/pics?imagename={attrs.image_name}&size={perm}"
-            for perm in perms if perm.isdigit() or perm == 'full'}
-        # changed from imageid to prevent iterating over catalog
+    def create_custom_url(self, attrs):
+        perms = [a.split('.')[1] for a in attrs.creator.get_all_permissions() if 'images' in a]
+        urls = {perm: f"http://{self.context['request'].get_host()}/images/pics?imagename={attrs.image_name}"
+                           f"&size={perm}" for perm in perms if perm.isdigit() or perm == 'full'}
+
+        if 'expiring_links' in perms:
+            urls['expiring-binary'] = f"http://{self.context['request'].get_host()}/images/generate_temp_url?imagename={attrs.image_name}&timeout="
+
+        return urls
 
     class Meta:
         model = Image

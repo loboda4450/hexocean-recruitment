@@ -7,6 +7,10 @@ def content_file_name(instance, filename):
     return '/'.join([instance.creator.username, filename])
 
 
+def nowplustimedelta():
+    return timezone.now() + timezone.timedelta(seconds=300)
+
+
 class ImagesUser(User):
     class Meta:
         proxy = True

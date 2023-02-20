@@ -74,6 +74,8 @@ WSGI_APPLICATION = 'hex.wsgi.application'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'MAX_TEMP_SECONDS': 30000,
+    'MIN_TEMP_SECONDS': 300
 }
 
 MEDIA_URL = '/pics/'
