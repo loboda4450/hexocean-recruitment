@@ -21,8 +21,9 @@ class ImagesUserSerializer(serializers.HyperlinkedModelSerializer):
 
         user.set_password(validated_data.get('password'))
         user.save()  # as I found in docs it's the best solution lol
-        user.groups.add(validated_data.get('groups')[0].id)
-        user.save()
+        if len(validated_data.get('groups') > 0):
+            user.groups.add(validated_data.get('groups')[0].id)
+            user.save()
 
         return user
 
