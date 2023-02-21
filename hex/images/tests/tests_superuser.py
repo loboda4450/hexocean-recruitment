@@ -3,6 +3,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from images.models import ImagesUser, Image
 
+
 class ImagesSuperUserCreateTestCase(APITestCase):
     def setUp(self) -> None:
         self.superuser = ImagesUser.objects.create_superuser('john', 'john@hexocean.com', 'johnpassword')
@@ -12,15 +13,15 @@ class ImagesSuperUserCreateTestCase(APITestCase):
         self.permissiondata = {'codename': '100', 'name': 'Can get 200px in height image'}
 
     def test_can_create_imagesuser(self):
-        response = self.client.post(reverse('imagesuser-list'), self.userdata)
+        response = self.client.post(reverse('imagesuser-list'), self.userdata, 'json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_can_create_group(self):
-        response = self.client.post(reverse('group-list'), self.groupdata)
+        response = self.client.post(reverse('group-list'), self.groupdata, 'json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_can_create_permission(self):
-        response = self.client.post(reverse('permission-list'), self.permissiondata)
+        response = self.client.post(reverse('permission-list'), self.permissiondata, 'json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
