@@ -19,6 +19,7 @@ class ImagesConfig(AppConfig):
             premium[0].permissions.add(
                 Permission.objects.get(codename='200'),
                 Permission.objects.get(codename='400'),
+                Permission.objects.get(codename='full'),
                 Permission.objects.get(codename='add_image'),
                 Permission.objects.get(codename='delete_image'),
                 Permission.objects.get(codename='view_image')
@@ -29,6 +30,7 @@ class ImagesConfig(AppConfig):
                 Permission.objects.get(codename='200'),
                 Permission.objects.get(codename='400'),
                 Permission.objects.get(codename='full'),
+                Permission.objects.get(codename='expiring_links'),
                 Permission.objects.get(codename='add_image'),
                 Permission.objects.get(codename='delete_image'),
                 Permission.objects.get(codename='view_image')
