@@ -1,5 +1,9 @@
 # HexOcean recruitment task
 
+### Setup
+- Thumbnail sizes are based on permissions, so if you want to add arbitrary thumbnail size you have to add new permission with `codename` of desired size (integer)
+- To create arbitrary tiers you have to create new group with desired (probably newly created) permissions. Adding, removing and viewing permissions are added by default.
+
 ### Requirements completed:
 - [ ] docker-compose
 - [ ] live preview
