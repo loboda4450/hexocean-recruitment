@@ -34,7 +34,21 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['url', 'name', 'permissions']
 
     # def validate(self, attrs):
-    #     if Group.objects.all().filter(name=attrs.get('name'))
+    #     ...
+
+    def create(self, validated_data):
+        group = Group(name=validated_data.get('name'))
+        group.save()
+
+        if len(validated_data.get('permissions')) > 0:
+            for perm in validated_data.get('permissions'):
+                group.permissions.add(perm)
+
+        for perm in ('add_image', "delete_image", 'view_image'):
+            group.permissions.add(Permission.objects.get(codename=perm))
+
+        group.save()
+        return group
 
 
 class PermissionSerializer(serializers.HyperlinkedModelSerializer):
