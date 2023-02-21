@@ -21,8 +21,10 @@ class ImagesUserSerializer(serializers.HyperlinkedModelSerializer):
 
         user.set_password(validated_data.get('password'))
         user.save()  # as I found in docs it's the best solution lol
-        if len(validated_data.get('groups') > 0):
-            user.groups.add(validated_data.get('groups')[0].id)
+        if validated_data.get('groups'):
+            for group in validated_data.get('groups'):
+                user.groups.add(group.id)
+
             user.save()
 
         return user
@@ -33,14 +35,11 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         model = Group
         fields = ['url', 'name', 'permissions']
 
-    # def validate(self, attrs):
-    #     ...
-
     def create(self, validated_data):
         group = Group(name=validated_data.get('name'))
         group.save()
 
-        if len(validated_data.get('permissions')) > 0:
+        if validated_data.get('permissions'):
             for perm in validated_data.get('permissions'):
                 group.permissions.add(perm)
 
