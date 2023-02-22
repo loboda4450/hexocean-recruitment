@@ -1,13 +1,20 @@
 from django.contrib.auth.models import Group, Permission
-from images.models import ImagesUser, Image
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from uuid import uuid4
+
+from images.models import ImagesUser, Image
 
 
 class ImagesUserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = ImagesUser
-        fields = ['url', 'username', 'password', 'email', 'groups']
+        fields = ['username', 'password', 'email', 'groups']
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }
+        }
 
     def validate(self, attrs):
         if ImagesUser.objects.filter(email=attrs.get("email")):
@@ -30,7 +37,7 @@ class ImagesUserSerializer(serializers.HyperlinkedModelSerializer):
         return user
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
+class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ['url', 'name', 'permissions']
@@ -50,10 +57,10 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         return group
 
 
-class PermissionSerializer(serializers.HyperlinkedModelSerializer):
+class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
-        fields = ['url', 'codename', 'name']
+        fields = ['codename', 'name']
 
     def validate(self, attrs):
         if not attrs.get('codename').isdigit():
@@ -74,7 +81,7 @@ class PermissionSerializer(serializers.HyperlinkedModelSerializer):
         return perm
 
 
-class ImageSerializer(serializers.HyperlinkedModelSerializer):
+class ImageSerializer(serializers.ModelSerializer):
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     pic_urls = serializers.SerializerMethodField(method_name='create_custom_url')
 
@@ -83,17 +90,22 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
 
     def create_custom_url(self, attrs):
         perms = [a.split('.')[1] for a in attrs.creator.get_all_permissions() if 'images' in a]
-        urls = {perm: f"http://{self.context['request'].get_host()}/images/pics?imagename={attrs.image_name}"
-                           f"&size={perm}" for perm in perms if perm.isdigit() or perm == 'full'}
+        urls = {perm: f"{reverse('image-pics', request=self.context['request'])}?imagename={attrs.image_name}" \
+                      f"&size={perm}" for perm in perms if perm.isdigit() or perm == 'full'}
 
         if 'expiring_links' in perms:
-            urls['expiring-binary'] = f"http://{self.context['request'].get_host()}/images/generate_temp_url?imagename={attrs.image_name}&timeout="
+            urls['expiring-binary'] = f"{reverse('image-generate-temp-url', request=self.context['request'])}" \
+                                      f"/images/generate_temp_url?imagename={attrs.image_name}&timeout="
 
         return urls
 
     class Meta:
         model = Image
-        fields = ['pic_urls', 'image_fullres', 'author']
+        fields = ['url', 'pic_urls', 'image_fullres', 'author']
+        extra_kwargs = {
+            'image_fullres': {'write_only': True},
+            'pic_urls': {'read_only': True}
+        }
 
     def validate(self, attrs):
         if (attrs.get('image_fullres')).content_type not in ('image/png', 'image/jpeg', 'image/jpg') or \

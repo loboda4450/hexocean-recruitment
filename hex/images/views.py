@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.models import Group, Permission
 from images.models import ImagesUser, Image
 from images.custom_renderers import JPEGRenderer, PNGRenderer
@@ -52,6 +54,13 @@ class ImageViewSet(ModelViewSet):
 
     # making it world readable because otherwise it's pointless imo
     # all creator permissions are applied, so even anonymous user will not get "extra" sizes
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        os.remove(instance.image_fullres.file.name)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(detail=False,
             methods=['GET'],
             name='Get picture',
