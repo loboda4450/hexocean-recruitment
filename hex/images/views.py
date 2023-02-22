@@ -65,7 +65,7 @@ class ImageViewSet(ModelViewSet):
                 timeout = self.request.query_params.get('timeout')
                 data = signing.loads(signed_data, max_age=int(timeout))
                 data_id, data_timeout = data.split(',')
-                image = Image.objects.get(id=data_id)
+                image = Image.objects.get(id=data_id)  # i allowed id here because it is encoded
             except signing.SignatureExpired:
                 return Response(JSONRenderer().render(data={'detail': f'Link expired'}),
                                 status=status.HTTP_400_BAD_REQUEST,
@@ -76,10 +76,7 @@ class ImageViewSet(ModelViewSet):
                                 status=status.HTTP_400_BAD_REQUEST,
                                 content_type='application/json')
 
-            new_img = Img.open(image.image_fullres)
-            x = io.BytesIO()
-            new_img.save(x, new_img.format)
-            return Response(x.getvalue())
+            return Response(image.image_fullres)
 
         queryset = Image.objects.get(image_name=self.request.query_params.get('imagename'))
         size = self.request.query_params.get('size')
@@ -90,10 +87,7 @@ class ImageViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN, content_type='application/json')
 
         if size == 'full':  # return full-sized image before size validation
-            new_img = Img.open(queryset.image_fullres)
-            x = io.BytesIO()
-            new_img.save(x, new_img.format)
-            return Response(x.getvalue())
+            return Response(queryset.image_fullres, status=status.HTTP_200_OK)
 
         if int(size) > queryset.image_fullres.height:  # resizing image based on height, so not checking width
             return Response(data=JSONRenderer().render(
@@ -102,6 +96,7 @@ class ImageViewSet(ModelViewSet):
 
         # reopen because of size validation...
         # https://code.djangoproject.com/ticket/13750 seems like it is not fixed after 13 years
+        # handling thumbnail resizing
         queryset.image_fullres.open()
 
         new_img = Img.open(queryset.image_fullres)
@@ -111,12 +106,12 @@ class ImageViewSet(ModelViewSet):
         x = io.BytesIO()
         new_img.save(x, new_img.format)
 
-        return Response(x.getvalue())
+        return Response(x.getvalue(), status=status.HTTP_200_OK)
 
     @action(detail=False,
             methods=['GET'],
             name='Get temporary link',
-            permission_classes=(IsAuthenticated, ))
+            permission_classes=(HasImagePermission,))
     def generate_temp_url(self, attrs):
         """API parametrized endpoint to get temporary link"""
         if not self.request.query_params.get('timeout').isdigit():
