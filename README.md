@@ -2,19 +2,22 @@
 
 ### Setup
 - To run app just exec `run.sh`, it will:
+  - create `venv` 
   - make migrations
   - migrate
-  - create superuser `hexocean:hexoceanpassword#1!`
-  - create dir `pics`
   - build containter using `docker-compose`
 - If you want to explore browsable api enter in browser
   - `http://localhost:8000`
 - `curl` examples are listed below
+- there are prepared users:
+  - superuser `hexocean:hexoceanpassword#1!`
+  - user with enterprise tier `example:examplepassword#1!`
+- there is `Custom tier` with Enterprise + 300px permission
 
 
 ### Informations
 - Thumbnail sizes are based on permissions, so if you want to add arbitrary thumbnail size you have to add new permission with `codename` of desired size (integer)
-- To create arbitrary tiers you have to create new group with desired (probably newly created) permissions. Adding, removing and viewing permissions are added by default.
+- To create arbitrary tiers you have to create new group with desired (probably newly created) permissions. Adding, removing and viewing images permissions are added by default.
 
 
 It is easier to use links returned by API, because it uses `uuid4` namespace, and I believe it's hardly guessable what your uploaded images names are :D
