@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os.path
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,6 +26,13 @@ SECRET_KEY = 'django-insecure-b&r9aae2ve54vt#rq5fzlhetmtu+a=t8pmxsk&_!n6z2n7dye8
 # DEBUG = True
 DEBUG = False
 ALLOWED_HOSTS = ['*']
+
+# TESTING PURPOSES
+if 'test' in sys.argv:
+    # speed up testing purely InMemory
+    DEFAULT_FILE_STORAGE = 'inmemorystorage.InMemoryStorage'
+    # so much faster, but broken a long time ago, so will not use it as default in production
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 # Application definition
 
@@ -70,9 +78,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'hex.wsgi.application'
 
 REST_FRAMEWORK = {
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'TEST_REQUEST_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.MultiPartRenderer',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
