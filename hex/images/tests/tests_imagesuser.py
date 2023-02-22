@@ -18,6 +18,64 @@ def mock_test_image(fmt='jpeg', size=(1000, 1000)):
     return SimpleUploadedFile(f'test.{fmt}', img_bytes.getvalue())
 
 
+def create_basic_tier():
+    basic = Group.objects.get_or_create(name='Basic')
+    basic[0].permissions.add(
+        Permission.objects.get(codename='200'),
+        Permission.objects.get(codename='add_image'),
+        Permission.objects.get(codename='delete_image'),
+        Permission.objects.get(codename='view_image')
+    )
+
+    return basic
+
+
+def create_premium_tier():
+    premium = Group.objects.get_or_create(name='Premium')
+    premium[0].permissions.add(
+        Permission.objects.get(codename='200'),
+        Permission.objects.get(codename='400'),
+        Permission.objects.get(codename='add_image'),
+        Permission.objects.get(codename='delete_image'),
+        Permission.objects.get(codename='view_image')
+    )
+
+    return premium
+
+
+def create_enterprise_tier():
+    enterprise = Group.objects.get_or_create(name='Enterprise')
+    enterprise[0].permissions.add(
+        Permission.objects.get(codename='200'),
+        Permission.objects.get(codename='400'),
+        Permission.objects.get(codename='full'),
+        Permission.objects.get(codename='expiring_links'),
+        Permission.objects.get(codename='add_image'),
+        Permission.objects.get(codename='delete_image'),
+        Permission.objects.get(codename='view_image')
+    )
+
+    return enterprise
+
+
+def create_custom_tier():
+    custom = Group.objects.get_or_create(name='Custom')
+    custom[0].permissions.add(
+        Permission.objects.get(codename='200'),
+        Permission.objects.create(codename=300,
+                                  name='Can get 300px in height images',
+                                  content_type_id=7),
+        Permission.objects.get(codename='400'),
+        Permission.objects.get(codename='full'),
+        Permission.objects.get(codename='expiring_links'),
+        Permission.objects.get(codename='add_image'),
+        Permission.objects.get(codename='delete_image'),
+        Permission.objects.get(codename='view_image')
+    )
+
+    return custom
+
+
 class ImagesUserCreateTestCase(APITestCase):
     #
     def setUp(self) -> None:
@@ -44,51 +102,14 @@ class ImagesUserReadTestCase(APITestCase):
     def setUp(self) -> None:
         self.user = ImagesUser.objects.create_user('john', 'john@hexocean.com', 'johnpassword')
         self.client.login(username='john', password='johnpassword')
-        self.custom_perm = Permission.objects.create(codename=300,
-                                                     name='Can get 300px in height images',
-                                                     content_type_id=7)
 
         # create default tiers
-        self.basic = Group.objects.get_or_create(name='Basic')
-        self.basic[0].permissions.add(
-            Permission.objects.get(codename='200'),
-            Permission.objects.get(codename='add_image'),
-            Permission.objects.get(codename='delete_image'),
-            Permission.objects.get(codename='view_image')
-        )
-
-        self.premium = Group.objects.get_or_create(name='Premium')
-        self.premium[0].permissions.add(
-            Permission.objects.get(codename='200'),
-            Permission.objects.get(codename='400'),
-            Permission.objects.get(codename='add_image'),
-            Permission.objects.get(codename='delete_image'),
-            Permission.objects.get(codename='view_image')
-        )
-
-        self.enterprise = Group.objects.get_or_create(name='Enterprise')
-        self.enterprise[0].permissions.add(
-            Permission.objects.get(codename='200'),
-            Permission.objects.get(codename='400'),
-            Permission.objects.get(codename='full'),
-            Permission.objects.get(codename='expiring_links'),
-            Permission.objects.get(codename='add_image'),
-            Permission.objects.get(codename='delete_image'),
-            Permission.objects.get(codename='view_image')
-        )
+        self.basic = create_basic_tier()
+        self.premium = create_premium_tier()
+        self.enterprise = create_enterprise_tier()
 
         # create custom tier
-        self.custom = Group.objects.get_or_create(name='Custom')
-        self.custom[0].permissions.add(
-            Permission.objects.get(codename='200'),
-            Permission.objects.get(codename='300'),
-            Permission.objects.get(codename='400'),
-            Permission.objects.get(codename='full'),
-            Permission.objects.get(codename='expiring_links'),
-            Permission.objects.get(codename='add_image'),
-            Permission.objects.get(codename='delete_image'),
-            Permission.objects.get(codename='view_image')
-        )
+        self.custom = create_custom_tier()
 
         x = mock_test_image()
         self.image = Image.objects.create(image_name=f"{uuid4()}.jpeg", image_fullres=x, binary=x.read(),
@@ -142,6 +163,6 @@ class ImagesUserReadTestCase(APITestCase):
         self.user.groups.add(self.enterprise[0])  # assign enterprise tier
         # had to parse it by hand, get with params didnt work :/
         url = f"{reverse('image-generate-temp-url')}?imagename={self.image.image_name}&timeout=30000"
-        response2 = self.client.get(url)
-        response3 = self.client.get(response2.data['link'])
-        self.assertEqual(response3.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        response = self.client.get(url)
+        response1 = self.client.get(response.data['link'])
+        self.assertEqual(response1.status_code, status.HTTP_200_OK, msg='Enterprise tier cant read expiring link')
