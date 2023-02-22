@@ -1,18 +1,33 @@
 # HexOcean recruitment task
 
 ### Setup
+- To run app just exec `run.sh`, it will:
+  - make migrations
+  - migrate
+  - create superuser `hexocean:hexoceanpassword#1!`
+  - create dir `pics`
+  - build containter using `docker-compose`
+- If you want to explore browsable api enter in browser
+  - `http://localhost:8000`
+- `curl` examples are listed below
+
+
+### Informations
 - Thumbnail sizes are based on permissions, so if you want to add arbitrary thumbnail size you have to add new permission with `codename` of desired size (integer)
 - To create arbitrary tiers you have to create new group with desired (probably newly created) permissions. Adding, removing and viewing permissions are added by default.
 
-To create user you do not have to access  
+
 It is easier to use links returned by API, because it uses `uuid4` namespace, and I believe it's hardly guessable what your uploaded images names are :D
 - Getting user images (tier-based links):
   - `curl -X GET http://host:8000/images/ -u "username:password"`
 - Posting images:
   - `curl -X POST -F "image_fullres=@path/to/image" http://host:8000/images/ -u "username:password"`
 - Deleting images:
-  - `curl -X DELETE http://host:8000/images/<pk>/ -u "username:password"`
-
+  - `curl -X DELETE http://host:8000/images/<int:pk>/ -u "username:password"`
+- Creating permission:
+  - `curl -X POST -F "codename=<desired thumbnail height><int>" -F "name=Can get <desired thumbnail height>px in height image" http://host:8000/permissions/ -u "username:password"`
+- Creating tiers:
+  - `curl -X POST -F "name=<desired tier name>" -F "permission=<int:pk>" -F "permission=<int:pk>" http://host:8000/groups/ -u "username:password"`
 
 ### Requirements completed:
 - [x] docker-compose

@@ -6,7 +6,7 @@ from images.custom_renderers import JPEGRenderer, PNGRenderer
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from images.permissions import HasImagePermission, ReadOnly
@@ -135,7 +135,8 @@ class ImageViewSet(ModelViewSet):
                                f'{self.request.query_params.get("timeout")}')
 
         return Response(data={'detail': f'Link created',
-                              'link': f'http://{attrs.get_host()}/images/pics?temp={signed}&timeout={self.request.query_params.get("timeout")}'},
+                              'link': f'{reverse("image-pics", request=self.request)}?'
+                                      f'temp={signed}&timeout={self.request.query_params.get("timeout")}'},
                         status=status.HTTP_201_CREATED)
 
 

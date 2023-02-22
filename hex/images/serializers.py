@@ -6,10 +6,10 @@ from uuid import uuid4
 from images.models import ImagesUser, Image
 
 
-class ImagesUserSerializer(serializers.HyperlinkedModelSerializer):
+class ImagesUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImagesUser
-        fields = ['username', 'password', 'email', 'groups']
+        fields = ['url', 'username', 'password', 'email', 'groups']
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -60,7 +60,7 @@ class GroupSerializer(serializers.ModelSerializer):
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
-        fields = ['codename', 'name']
+        fields = ['id', 'codename', 'name']
 
     def validate(self, attrs):
         if not attrs.get('codename').isdigit():
@@ -95,7 +95,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
         if 'expiring_links' in perms:
             urls['expiring-binary'] = f"{reverse('image-generate-temp-url', request=self.context['request'])}" \
-                                      f"/images/generate_temp_url?imagename={attrs.image_name}&timeout="
+                                      f"?imagename={attrs.image_name}&timeout="
 
         return urls
 
