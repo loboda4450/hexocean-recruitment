@@ -5,9 +5,9 @@
 - To create arbitrary tiers you have to create new group with desired (probably newly created) permissions. Adding, removing and viewing permissions are added by default.
 
 ### Requirements completed:
-- [ ] docker-compose
+- [x] docker-compose
 - [ ] live preview
-- [ ] tests
+- [x] tests
 - [x] Upload images via HTTP request
   - [x] Validate image type
   - [x] Save with custom id

@@ -3,7 +3,7 @@ drf-app:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
-      - ./pics:/drf-app
+      - ./pics:/drf-app/pics
       - ./db.sqlite3:/code/db.sqlite3
     ports:
       - "8000:8000"
