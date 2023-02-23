@@ -3,6 +3,7 @@
 ### Setup
 - To run app just exec `run.sh`, it will:
   - create `venv` 
+  - install dependencies inside `venv`
   - make migrations
   - migrate
   - build containter using `docker-compose`
@@ -16,10 +17,13 @@
 
 
 ### Informations
+- It took me about 25 hours to code it. I faced some problems probably distro-based (thanks Arch), that did not happen on my private server running Ubuntu - realized too late.
 - Thumbnail sizes are based on permissions, so if you want to add arbitrary thumbnail size you have to add new permission with `codename` of desired size (integer)
 - To create arbitrary tiers you have to create new group with desired (probably newly created) permissions. Adding, removing and viewing images permissions are added by default.
+- After you obtain temporary url you have to fill a parameter `timeout` at the end of url with desired link expiration seconds (e.g 300, 500)
 
 
+### Example curls
 It is easier to use links returned by API, because it uses `uuid4` namespace, and I believe it's hardly guessable what your uploaded images names are :D
 - Getting user images (tier-based links):
   - `curl -X GET http://host:8000/images/ -u "username:password"`
