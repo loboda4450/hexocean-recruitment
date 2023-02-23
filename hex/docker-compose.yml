@@ -1,9 +1,12 @@
-drf-app:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/code
-      - ./pics:/drf-app/pics
-      - ./db.sqlite3:/code/db.sqlite3
-    ports:
-      - "8000:8000"
+version: '3.8'
+
+services:
+    drf-app:
+      build: .
+      command: python manage.py runserver 0.0.0.0:8000
+      volumes:
+        - .:/code
+        - ./pics:/drf-app/pics
+        - ./db.sqlite3:/code/db.sqlite3
+      ports:
+        - "8000:8000"
